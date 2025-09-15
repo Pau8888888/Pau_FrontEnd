@@ -1,7 +1,9 @@
 # Pau_FrontEnd
 
-Versión: 1.0.0 Alfa
+Tecnologias: Reactjs, Tailwind.
 
-Estado: Listo para comenzar
+Versión: 1.0.0 Alfa.
+
+Estado: Listo para comenzar.
 
 Descripción: En TopCars encontrarás coches nuevos y de ocasión al mejor precio. Tu próximo coche te espera aquí!
