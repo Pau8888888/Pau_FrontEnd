@@ -1,6 +1,6 @@
 # Pau_FrontEnd
 
-ecnologies: Visual Studio Code, Nodejs, Docker.
+Tecnologies: Visual Studio Code, Nodejs, Docker, GitHub.
 
 Versió: 1.0.0 Alfa.
 
