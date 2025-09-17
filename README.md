@@ -1,6 +1,6 @@
 # Pau_FrontEnd
 
-Tecnologias: Reactjs, Tailwind.
+Tecnologias: Visual Studio Code, Nodejs, Docker.
 
 Versión: 1.0.0 Alfa.
 
