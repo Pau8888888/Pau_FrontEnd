@@ -1,9 +1,9 @@
 # Pau_FrontEnd
 
-Tecnologias: Visual Studio Code, Nodejs, Docker.
+ecnologies: Visual Studio Code, Nodejs, Docker.
 
-Versión: 1.0.0 Alfa.
+Versió: 1.0.0 Alfa.
 
-Estado: Listo para comenzar.
+Estat: Llest per utilitzar.
 
-Descripción: Tienda de zapatillas de Pau Alchapar llamada DropPoint.
+Descripció: FrontEnd de la botiga de sabates DropPoint.
