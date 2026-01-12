@@ -4,7 +4,9 @@ import heroSneaker from './img/zapatilla.png';
 export default function UrbanSneakersStore() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('todos');
-  const [cartItems, setCartItems] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [selectedSizes, setSelectedSizes] = useState({});
 
   const products = [
     {
@@ -70,20 +72,32 @@ export default function UrbanSneakersStore() {
   ];
 
   const categories = [
-    { id: 'todos', name: 'Todos', icon: '🎯' },
-    { id: 'classics', name: 'Clásicas', icon: '👟' },
-    { id: 'running', name: 'Running', icon: '🏃' },
-    { id: 'comfort', name: 'Comfort', icon: '☁️' },
-    { id: 'retro', name: 'Retro', icon: '🔄' },
-    { id: 'premium', name: 'Premium', icon: '⭐' }
+    { id: 'todos', name: 'Todos' },
+    { id: 'classics', name: 'Clásicas' },
+    { id: 'running', name: 'Running' },
+    { id: 'comfort', name: 'Comfort' },
+    { id: 'retro', name: 'Retro' },
+    { id: 'premium', name: 'Premium' }
   ];
 
   const filteredProducts = selectedCategory === 'todos'
     ? products
     : products.filter(p => p.category === selectedCategory);
 
-  const addToCart = () => {
-    setCartItems(cartItems + 1);
+  const addToCart = (product) => {
+    const size = selectedSizes[product.id];
+    if (!size) {
+      alert('Por favor, selecciona una talla');
+      return;
+    }
+
+    const newItem = {
+      ...product,
+      size: size,
+      cartId: `${product.id}-${size}-${Date.now()}`
+    };
+
+    setCartItems([...cartItems, newItem]);
   };
 
   // Íconos SVG
@@ -226,12 +240,12 @@ export default function UrbanSneakersStore() {
       justifyContent: 'center',
       fontWeight: 'bold'
     },
-hero: {
-  // Cambiamos el degradado a uno más urbano y oscuro
-  background: 'linear-gradient(90deg, #111827, #1f2937, #ef4444)', // Negro, gris oscuro, rojo intenso
-  color: 'white',
-  padding: '80px 20px'
-},
+    hero: {
+      // Cambiamos el degradado a uno más urbano y oscuro
+      background: 'linear-gradient(90deg, #111827, #1f2937, #ef4444)', // Negro, gris oscuro, rojo intenso
+      color: 'white',
+      padding: '80px 20px'
+    },
     heroContainer: {
       maxWidth: '1280px',
       margin: '0 auto',
@@ -252,11 +266,11 @@ hero: {
       opacity: 0.9
     },
     heroImage: {
-  width: '100%',
-  maxWidth: '1000px',
-  height: 'auto',
-  objectFit: 'contain'
-},
+      width: '100%',
+      maxWidth: '1000px',
+      height: 'auto',
+      objectFit: 'contain'
+    },
     heroBadge: {
       display: 'inline-block',
       backgroundColor: 'rgba(255,255,255,0.2)',
@@ -348,9 +362,9 @@ hero: {
       fontWeight: '600',
       cursor: 'pointer',
       whiteSpace: 'nowrap',
-      backgroundColor: active ? '#3b82f6' : '#f3f4f6',
+      backgroundColor: active ? '#ff0000' : '#f3f4f6',
       color: active ? 'white' : '#374151',
-      boxShadow: active ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none',
+      boxShadow: active ? '0 4px 12px rgba(255, 0, 0, 0.3)' : 'none',
       transition: 'all 0.2s'
     }),
     categoryButtonHover: (active) => ({
@@ -422,9 +436,9 @@ hero: {
       color: 'white',
       backgroundColor:
         type === 'New' ? '#10b981' :
-        type === 'Bestseller' ? '#3b82f6' :
-        type === 'Sale' ? '#ef4444' :
-        type === 'Premium' ? '#9333ea' : '#f59e0b'
+          type === 'Bestseller' ? '#3b82f6' :
+            type === 'Sale' ? '#ef4444' :
+              type === 'Premium' ? '#9333ea' : '#f59e0b'
     }),
     wishlistButton: {
       position: 'absolute',
@@ -478,20 +492,18 @@ hero: {
       color: '#111827'
     },
     addButton: {
-      backgroundColor: '#3b82f6',
+      backgroundColor: '#ff0000',
       color: 'white',
       padding: '12px 24px',
       borderRadius: '8px',
       border: 'none',
       fontWeight: '600',
       cursor: 'pointer',
-      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
       transition: 'all 0.2s'
     },
     addButtonHover: {
-      backgroundColor: '#2563eb',
+      backgroundColor: '#bc0b0b',
       transform: 'translateY(-2px)',
-      boxShadow: '0 6px 16px rgba(59, 130, 246, 0.4)'
     },
     sizes: {
       marginTop: '16px',
@@ -505,7 +517,8 @@ hero: {
     },
     sizesGrid: {
       display: 'flex',
-      gap: '8px'
+      gap: '8px',
+      justifyContent: 'center'
     },
     sizeButton: {
       width: '40px',
@@ -520,9 +533,14 @@ hero: {
       transition: 'all 0.2s'
     },
     sizeButtonHover: {
-      borderColor: '#3b82f6',
-      color: '#3b82f6',
+      borderColor: '#ff0000',
+      color: '#ff0000',
       backgroundColor: '#eff6ff'
+    },
+    sizeButtonActive: {
+      borderColor: '#ff0000',
+      color: 'white',
+      backgroundColor: '#ff0000'
     },
     featuresSection: {
       backgroundColor: '#111827',
@@ -542,7 +560,7 @@ hero: {
     featureIconContainer: {
       width: '64px',
       height: '64px',
-      backgroundColor: '#3b82f6',
+      backgroundColor: '#ff0000',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
@@ -559,7 +577,7 @@ hero: {
       color: '#9ca3af'
     },
     newsletter: {
-      background: 'linear-gradient(90deg, #0a4ddfff, #4e0dcfff, #ef4444)',
+      background: 'linear-gradient(90deg, #111827, #1f2937, #ef4444)',
       padding: '64px 20px',
       textAlign: 'center',
       color: 'white'
@@ -597,15 +615,14 @@ hero: {
       boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.4)'
     },
     subscribeButton: {
-      backgroundColor: 'white',
-      color: '#3b82f6',
+      backgroundColor: 'red',
+      color: '#ffffff',
       padding: '16px 32px',
       borderRadius: '8px',
       border: 'none',
       fontWeight: 'bold',
       cursor: 'pointer',
-      fontSize: '16px',
-      transition: 'transform 0.2s'
+      fontSize: '16px'
     },
     subscribeButtonHover: {
       transform: 'translateY(-2px)'
@@ -669,6 +686,129 @@ hero: {
       paddingTop: '32px',
       textAlign: 'center',
       fontSize: '14px'
+    },
+    cartModal: {
+      position: 'fixed',
+      top: 0,
+      right: 0,
+      width: '400px',
+      height: '100vh',
+      backgroundColor: 'white',
+      boxShadow: '-4px 0 20px rgba(0,0,0,0.2)',
+      zIndex: 2000,
+      display: 'flex',
+      flexDirection: 'column',
+      transform: 'translateX(0)',
+      transition: 'transform 0.3s ease'
+    },
+    cartOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      zIndex: 1999
+    },
+    cartHeader: {
+      padding: '24px',
+      borderBottom: '1px solid #e5e7eb',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    cartTitle: {
+      fontSize: '24px',
+      fontWeight: 'bold',
+      color: '#111827'
+    },
+    closeButton: {
+      background: 'none',
+      border: 'none',
+      fontSize: '24px',
+      cursor: 'pointer',
+      color: '#6b7280',
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    cartContent: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: '24px'
+    },
+    cartEmpty: {
+      textAlign: 'center',
+      padding: '48px 24px',
+      color: '#6b7280'
+    },
+    cartItem: {
+      display: 'flex',
+      gap: '16px',
+      padding: '16px',
+      backgroundColor: '#f9fafb',
+      borderRadius: '12px',
+      marginBottom: '16px'
+    },
+    cartItemImage: {
+      width: '80px',
+      height: '80px',
+      objectFit: 'cover',
+      borderRadius: '8px'
+    },
+    cartItemInfo: {
+      flex: 1
+    },
+    cartItemName: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#111827',
+      marginBottom: '4px'
+    },
+    cartItemSize: {
+      fontSize: '14px',
+      color: '#6b7280',
+      marginBottom: '8px'
+    },
+    cartItemPrice: {
+      fontSize: '18px',
+      fontWeight: 'bold',
+      color: '#ff0000'
+    },
+    removeButton: {
+      background: 'none',
+      border: 'none',
+      color: '#ef4444',
+      cursor: 'pointer',
+      fontSize: '20px',
+      padding: '4px'
+    },
+    cartFooter: {
+      padding: '24px',
+      borderTop: '1px solid #e5e7eb'
+    },
+    cartTotal: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px',
+      fontSize: '20px',
+      fontWeight: 'bold'
+    },
+    checkoutButton: {
+      width: '100%',
+      backgroundColor: '#ff0000',
+      color: 'white',
+      padding: '16px',
+      borderRadius: '8px',
+      border: 'none',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s'
     }
   };
 
@@ -677,7 +817,12 @@ hero: {
       {/* Navbar */}
       <nav style={styles.navbar}>
         <div style={styles.navContainer}>
-          <span style={styles.logoText}>DropPoint</span>
+          <span
+            style={{ ...styles.logoText, cursor: 'pointer' }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            DropPoint
+          </span>
 
           <div style={styles.navLinks}>
             {['Inicio', 'Colecciones', 'Ofertas', 'Contacto'].map((text, i) => (
@@ -688,8 +833,8 @@ hero: {
                   ...styles.navLink,
                   ...(menuOpen && styles.navLinkHover)
                 }}
-                onMouseEnter={(e) => e.target.style.color = '#3b82f6'}
-                onMouseLeave={(e) => e.target.style.color = '#374151'}
+                onMouseEnter={(e) => e.target.style.color = '#ff0000'}
+                onMouseLeave={(e) => e.target.style.color = '#333'}
               >
                 {text}
               </a>
@@ -699,10 +844,12 @@ hero: {
           <div style={styles.navIcons}>
             <button
               style={styles.iconButton}
+              onClick={() => setShowCart(!showCart)}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
               onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             >
-              <SearchIcon />
+              <CartIcon />
+              {cartItems.length > 0 && <span style={styles.cartBadge}>{cartItems.length}</span>}
             </button>
             <button
               style={styles.iconButton}
@@ -711,72 +858,125 @@ hero: {
             >
               <HeartIcon />
             </button>
-            <button
-              style={styles.iconButton}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-            >
-              <CartIcon />
-              {cartItems > 0 && <span style={styles.cartBadge}>{cartItems}</span>}
-            </button>
           </div>
         </div>
       </nav>
+      {/* Cart Modal */}
+      {showCart && (
+        <>
+          <div style={styles.cartOverlay} onClick={() => setShowCart(false)} />
+          <div style={styles.cartModal}>
+            <div style={styles.cartHeader}>
+              <h2 style={styles.cartTitle}>Tu Carrito</h2>
+              <button
+                style={styles.closeButton}
+                onClick={() => setShowCart(false)}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={styles.cartContent}>
+              {cartItems.length === 0 ? (
+                <div style={styles.cartEmpty}>
+                  <p style={{ fontSize: '18px', marginBottom: '8px' }}>Tu carrito está vacío</p>
+                  <p style={{ fontSize: '14px' }}>Añade productos para empezar</p>
+                </div>
+              ) : (
+                cartItems.map((item) => (
+                  <div key={item.cartId} style={styles.cartItem}>
+                    <img src={item.image} alt={item.name} style={styles.cartItemImage} />
+                    <div style={styles.cartItemInfo}>
+                      <div style={styles.cartItemName}>{item.name}</div>
+                      <div style={styles.cartItemSize}>Talla: {item.size}</div>
+                      <div style={styles.cartItemPrice}>€{item.price}</div>
+                    </div>
+                    <button
+                      style={styles.removeButton}
+                      onClick={() => setCartItems(cartItems.filter(i => i.cartId !== item.cartId))}
+                      onMouseEnter={(e) => e.target.style.color = '#dc2626'}
+                      onMouseLeave={(e) => e.target.style.color = '#ef4444'}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {cartItems.length > 0 && (
+              <div style={styles.cartFooter}>
+                <div style={styles.cartTotal}>
+                  <span>Total:</span>
+                  <span>€{cartItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)}</span>
+                </div>
+                <button
+                  style={styles.checkoutButton}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#dc2626'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#ff0000'}
+                >
+                  Proceder al pago
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Hero */}
-<section style={styles.hero}>
-  <div style={styles.heroContainer}>
-    <div>
-      <div style={styles.heroBadge}>⚡ Nueva colección 2025</div>
-      <h1 style={styles.heroTitle}>Define tu estilo urbano</h1>
-      <p style={styles.heroText}>
-        Descubre las zapatillas más innovadoras diseñadas para el ritmo de la ciudad moderna. Comodidad, estilo y tecnología en cada paso.
-      </p>
-      <div style={styles.heroButtons}>
-        {/* 👇 Cambiamos primaryButton por secondaryButton aquí */}
-        <button
-          style={styles.secondaryButton}
-          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.15)'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-        >
-          Explorar Colección
-        </button>
-        <button
-          style={styles.secondaryButton}
-          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.15)'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-        >
-          Ver Ofertas
-        </button>
-      </div>
-      <div style={styles.heroStats}>
-        <div>
-          <div style={styles.stat}>10K+</div>
-          <div style={styles.statLabel}>Clientes felices</div>
+      <section style={styles.hero}>
+        <div style={styles.heroContainer}>
+          <div>
+            <h1 style={styles.heroTitle}>Define tu estilo urbano</h1>
+            <p style={styles.heroText}>
+              Descubre las zapatillas más innovadoras diseñadas para el ritmo de la ciudad moderna. Comodidad, estilo y tecnología en cada paso.
+            </p>
+            <div style={styles.heroButtons}>
+              <button
+                style={styles.secondaryButton}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.15)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                Explorar colección
+              </button>
+              <button
+                style={styles.secondaryButton}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.15)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                Ver Ofertas
+              </button>
+            </div>
+            <div style={styles.heroStats}>
+              <div>
+                <div style={styles.stat}>10K+</div>
+                <div style={styles.statLabel}>Clientes felices</div>
+              </div>
+              <div>
+                <div style={styles.stat}>4.9★</div>
+                <div style={styles.statLabel}>Valoración media</div>
+              </div>
+              <div>
+                <div style={styles.stat}>500+</div>
+                <div style={styles.statLabel}>Modelos</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src={heroSneaker}
+              alt="Hero Sneaker"
+              style={{
+                ...styles.heroImage,
+                mixBlendMode: 'normal',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
         </div>
-        <div>
-          <div style={styles.stat}>4.9★</div>
-          <div style={styles.statLabel}>Valoración media</div>
-        </div>
-        <div>
-          <div style={styles.stat}>500+</div>
-          <div style={styles.statLabel}>Modelos</div>
-        </div>
-      </div>
-    </div>
-    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-      <img
-        src={heroSneaker}
-        alt="Hero Sneaker"
-        style={{
-          ...styles.heroImage,
-          mixBlendMode: 'normal',
-          objectFit: 'contain'
-        }}
-      />
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Categories */}
       <section style={styles.categoriesSection}>
@@ -822,11 +1022,6 @@ hero: {
             <div
               key={product.id}
               style={styles.productCard}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.productCardHover)}
-              onMouseLeave={(e) => {
-                e.target.style.transform = '';
-                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-              }}
             >
               <div style={styles.productImageContainer}>
                 <img
@@ -858,12 +1053,12 @@ hero: {
                   <span style={styles.price}>€{product.price}</span>
                   <button
                     style={styles.addButton}
-                    onClick={addToCart}
+                    onClick={() => addToCart(product)}
                     onMouseEnter={(e) => Object.assign(e.target.style, styles.addButtonHover)}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = '#3b82f6';
+                      e.target.style.backgroundColor = '#ff0000';
                       e.target.style.transform = '';
-                      e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(186, 0, 0, 0.3)';
                     }}
                   >
                     Añadir
@@ -873,20 +1068,40 @@ hero: {
                 <div style={styles.sizes}>
                   <p style={styles.sizesLabel}>Tallas disponibles:</p>
                   <div style={styles.sizesGrid}>
-                    {['39', '40', '41', '42', '43'].map(size => (
-                      <button
-                        key={size}
-                        style={styles.sizeButton}
-                        onMouseEnter={(e) => Object.assign(e.target.style, styles.sizeButtonHover)}
-                        onMouseLeave={(e) => {
-                          e.target.style.borderColor = '#e5e7eb';
-                          e.target.style.color = '#374151';
-                          e.target.style.backgroundColor = 'white';
-                        }}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {['39', '40', '41', '42', '43'].map(size => {
+                      const isSelected = selectedSizes[product.id] === size;
+
+                      return (
+                        <button
+                          key={size}
+                          style={{
+                            ...styles.sizeButton,
+                            ...(isSelected && styles.sizeButtonActive)
+                          }}
+                          onClick={() => {
+                            setSelectedSizes({
+                              ...selectedSizes,
+                              [product.id]: isSelected ? null : size
+                            });
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.target.style.borderColor = '#ff0000';
+                              e.target.style.color = '#ff0000';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.target.style.borderColor = '#e5e7eb';
+                              e.target.style.color = '#374151FF';
+                              e.target.style.backgroundColor = 'white';
+                            }
+                          }}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -930,52 +1145,52 @@ hero: {
       </section>
 
       {/* Newsletter */}
-<section style={styles.newsletter}>
-  <h2 style={styles.newsletterTitle}>Únete a la comunidad DropPoint</h2>
-  <p style={styles.newsletterText}>Recibe ofertas exclusivas, novedades y consejos de estilo</p>
-  <div style={styles.newsletterForm}>
-    <input
-      type="email"
-      placeholder="tu@email.com"
-      style={styles.emailInput}
-      onFocus={(e) => {
-        e.target.style.borderColor = '#3b82f6';
-        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.3)';
-        e.target.style.transform = 'scale(1.01)';
-      }}
-      onBlur={(e) => {
-        e.target.style.borderColor = '#4f46e5';
-        e.target.style.boxShadow = '';
-        e.target.style.transform = '';
-      }}
-    />
-    <button
-      style={styles.subscribeButton}
-      onMouseEnter={(e) => {
-        e.target.style.backgroundColor = '#f0f9ff';
-        e.target.style.transform = 'translateY(-3px)';
-        e.target.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.backgroundColor = 'white';
-        e.target.style.transform = '';
-        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-      }}
-    >
-      Suscribirse
-    </button>
-  </div>
-  <p style={{ fontSize: '14px', marginTop: '16px', opacity: 0.8 }}>
-    🎁 Recibe un 15% de descuento en tu primera compra
-  </p>
-</section>
+      <section style={styles.newsletter}>
+        <h2 style={styles.newsletterTitle}>Únete a la comunidad DropPoint</h2>
+        <p style={styles.newsletterText}>Recibe ofertas exclusivas, novedades y consejos de estilo</p>
+        <div style={styles.newsletterForm}>
+          <input
+            type="email"
+            placeholder="tu@email.com"
+            style={styles.emailInput}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#ff0000';
+              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.3)';
+              e.target.style.transform = 'scale(1.01)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#ff0000';
+              e.target.style.boxShadow = '';
+              e.target.style.transform = '';
+            }}
+          />
+          <button
+            style={styles.subscribeButton}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f0f9ff';
+              e.target.style.transform = 'translateY(-3px)';
+              e.target.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'white';
+              e.target.style.transform = '';
+              e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            }}
+          >
+            Suscribirse
+          </button>
+        </div>
+        <p style={{ fontSize: '14px', marginTop: '16px', opacity: 0.8 }}>
+          Recibe un 15% de descuento en tu primera compra
+        </p>
+      </section>
 
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.footerContainer}>
           <div style={styles.footerGrid}>
             <div>
-              <div style={{fontSize: '24px', fontWeight: 'bold', color: 'white'}}>DropPoint</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>DropPoint</div>
               <p style={{ fontSize: '14px', margin: '16px 0', color: '#9ca3af', textAlign: 'left', maxWidth: '200px' }}>
                 Tu destino para las mejores zapatillas urbanas del mercado.
               </p>
@@ -1021,4 +1236,5 @@ hero: {
       </footer>
     </div>
   );
+
 }
