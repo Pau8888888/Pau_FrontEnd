@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import heroSneaker from './img/zapatilla.png';
 
 export default function UrbanSneakersStore() {
@@ -7,67 +8,68 @@ export default function UrbanSneakersStore() {
   const [cartItems, setCartItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState({});
+  const navigate = useNavigate();
 
   // Añade esta función dentro de tu componente UrbanSneakersStore
-// Colócala después de las otras funciones (addToCart, etc.)
+  // Colócala después de las otras funciones (addToCart, etc.)
 
-const handleCheckout = async () => {
-  if (cartItems.length === 0) {
-    alert('El carrito está vacío');
-    return;
-  }
-
-  try {
-    // Preparar los datos del pedido
-    const orderData = {
-      productos: cartItems.map(item => ({
-        productoId: item.id.toString(),
-        nombre: item.name,
-        precio: item.price,
-        cantidad: 1, // Puedes modificar esto si tienes cantidades
-        imagen: item.image,
-        talla: item.size
-      })),
-      total: cartItems.reduce((sum, item) => sum + item.price, 0),
-      cliente: {
-        nombre: '', // Puedes añadir un formulario para recoger estos datos
-        email: '',
-        telefono: '',
-        direccion: ''
-      },
-      estado: 'pendiente'
-    };
-
-    // Enviar la petición al backend
-    const response = await fetch('http://localhost:4000/api/pedidos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderData)
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      alert('¡Pedido realizado con éxito! ID: ' + data.pedido._id);
-      // Vaciar el carrito
-      setCartItems([]);
-      setShowCart(false);
-    } else {
-      alert('Error al procesar el pedido: ' + data.message);
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      alert('El carrito está vacío');
+      return;
     }
 
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Error al conectar con el servidor');
-  }
-};
+    try {
+      // Preparar los datos del pedido
+      const orderData = {
+        productos: cartItems.map(item => ({
+          productoId: item.id.toString(),
+          nombre: item.name,
+          precio: item.price,
+          cantidad: 1, // Puedes modificar esto si tienes cantidades
+          imagen: item.image,
+          talla: item.size
+        })),
+        total: cartItems.reduce((sum, item) => sum + item.price, 0),
+        cliente: {
+          nombre: '', // Puedes añadir un formulario para recoger estos datos
+          email: '',
+          telefono: '',
+          direccion: ''
+        },
+        estado: 'pendiente'
+      };
 
-// IMPORTANTE: Modifica el botón "Proceder al pago" para usar esta función
-// Busca esta línea en tu código:
-// <button style={styles.checkoutButton} ...>
-// Y añade: onClick={handleCheckout}
+      // Enviar la petición al backend
+      const response = await fetch('http://localhost:4000/api/pedidos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('¡Pedido realizado con éxito! ID: ' + data.pedido._id);
+        // Vaciar el carrito
+        setCartItems([]);
+        setShowCart(false);
+      } else {
+        alert('Error al procesar el pedido: ' + data.message);
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al conectar con el servidor');
+    }
+  };
+
+  // IMPORTANTE: Modifica el botón "Proceder al pago" para usar esta función
+  // Busca esta línea en tu código:
+  // <button style={styles.checkoutButton} ...>
+  // Y añade: onClick={handleCheckout}
 
   const products = [
     {
@@ -211,6 +213,12 @@ const handleCheckout = async () => {
     </svg>
   );
 
+  const TrashIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z" />
+    </svg>
+  );
+
   const styles = {
     page: {
       minHeight: '100vh',
@@ -244,7 +252,7 @@ const handleCheckout = async () => {
       alignItems: 'center'
     },
     navLink: {
-      color: '#374151',
+      color: '#4B5563',
       textDecoration: 'none',
       fontWeight: '500',
       cursor: 'pointer',
@@ -566,6 +574,16 @@ const handleCheckout = async () => {
       backgroundColor: '#bc0b0b',
       transform: 'translateY(-2px)',
     },
+    detailsButton: {
+      backgroundColor: 'transparent',
+      color: '#ff0000',
+      padding: '12px 24px',
+      borderRadius: '8px',
+      border: '2px solid #ff0000',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    },
     sizes: {
       marginTop: '16px',
       paddingTop: '16px',
@@ -683,7 +701,8 @@ const handleCheckout = async () => {
       border: 'none',
       fontWeight: 'bold',
       cursor: 'pointer',
-      fontSize: '16px'
+      fontSize: '16px',
+      transition: 'all 0.2s'
     },
     subscribeButtonHover: {
       transform: 'translateY(-2px)'
@@ -691,7 +710,7 @@ const handleCheckout = async () => {
     footer: {
       backgroundColor: '#111827',
       color: '#9ca3af',
-      padding: '48px 20px'
+      padding: '48px 20px 8px'
     },
     footerContainer: {
       maxWidth: '1280px',
@@ -744,7 +763,8 @@ const handleCheckout = async () => {
     },
     copyright: {
       borderTop: '1px solid #374151',
-      paddingTop: '32px',
+      paddingTop: '8px',
+      paddingBottom: '8px',
       textAlign: 'center',
       fontSize: '14px'
     },
@@ -842,10 +862,11 @@ const handleCheckout = async () => {
     removeButton: {
       background: 'none',
       border: 'none',
-      color: '#ef4444',
+      color: '#111827',
       cursor: 'pointer',
       fontSize: '20px',
-      padding: '4px'
+      padding: '4px',
+      transition: 'color 0.2s'
     },
     cartFooter: {
       padding: '24px',
@@ -895,7 +916,7 @@ const handleCheckout = async () => {
                   ...(menuOpen && styles.navLinkHover)
                 }}
                 onMouseEnter={(e) => e.target.style.color = '#ff0000'}
-                onMouseLeave={(e) => e.target.style.color = '#333'}
+                onMouseLeave={(e) => e.target.style.color = '#4B5563'}
               >
                 {text}
               </a>
@@ -957,10 +978,10 @@ const handleCheckout = async () => {
                     <button
                       style={styles.removeButton}
                       onClick={() => setCartItems(cartItems.filter(i => i.cartId !== item.cartId))}
-                      onMouseEnter={(e) => e.target.style.color = '#dc2626'}
-                      onMouseLeave={(e) => e.target.style.color = '#ef4444'}
+                      onMouseEnter={(e) => e.target.style.color = '#4b5563'}
+                      onMouseLeave={(e) => e.target.style.color = '#111827'}
                     >
-                      🗑️
+                      <TrashIcon />
                     </button>
                   </div>
                 ))
@@ -1111,20 +1132,38 @@ const handleCheckout = async () => {
 
                 <h3 style={styles.productName}>{product.name}</h3>
 
-                <div style={styles.priceRow}>
+                <div style={{ ...styles.priceRow, flexWrap: 'wrap', gap: '8px' }}>
                   <span style={styles.price}>€{product.price}</span>
-                  <button
-                    style={styles.addButton}
-                    onClick={() => addToCart(product)}
-                    onMouseEnter={(e) => Object.assign(e.target.style, styles.addButtonHover)}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = '#ff0000';
-                      e.target.style.transform = '';
-                      e.target.style.boxShadow = '0 4px 12px rgba(186, 0, 0, 0.3)';
-                    }}
-                  >
-                    Añadir
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      style={styles.detailsButton}
+                      onClick={() => navigate(`/producto/${product.id}`)}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#ff0000';
+                        e.target.style.color = 'white';
+                        e.target.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.color = '#ff0000';
+                        e.target.style.transform = '';
+                      }}
+                    >
+                      Ver detalles
+                    </button>
+                    <button
+                      style={styles.addButton}
+                      onClick={() => addToCart(product)}
+                      onMouseEnter={(e) => Object.assign(e.target.style, styles.addButtonHover)}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#ff0000';
+                        e.target.style.transform = '';
+                        e.target.style.boxShadow = '0 4px 12px rgba(186, 0, 0, 0.3)';
+                      }}
+                    >
+                      Añadir
+                    </button>
+                  </div>
                 </div>
 
                 <div style={styles.sizes}>
@@ -1229,14 +1268,14 @@ const handleCheckout = async () => {
           <button
             style={styles.subscribeButton}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f0f9ff';
-              e.target.style.transform = 'translateY(-3px)';
-              e.target.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+              e.target.style.backgroundColor = '#bc0b0b';
+              e.target.style.transform = 'translateY(-4px)';
+              e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'white';
+              e.target.style.backgroundColor = 'red';
               e.target.style.transform = '';
-              e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+              e.target.style.boxShadow = '';
             }}
           >
             Suscribirse

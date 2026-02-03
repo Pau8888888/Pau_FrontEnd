@@ -4,6 +4,7 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import ProductDetails from "./pages/ProductDetails";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,6 +27,10 @@ function App() {
           path="/dashboard"
           element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
+        <Route
+          path="/producto/:id"
+          element={isAuthenticated ? <ProductDetails /> : <Navigate to="/login" />}
+        />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
@@ -33,3 +38,4 @@ function App() {
 }
 
 export default App;
+
