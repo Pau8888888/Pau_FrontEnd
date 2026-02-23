@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import heroSneaker from './img/zapatilla.png';
 
 export default function UrbanSneakersStore() {
@@ -9,6 +9,15 @@ export default function UrbanSneakersStore() {
   const [showCart, setShowCart] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.clearCart) {
+      setCartItems([]);
+      setShowCart(false);
+      navigate('/dashboard', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   // Añade esta función dentro de tu componente UrbanSneakersStore
   // Colócala después de las otras funciones (addToCart, etc.)
@@ -18,58 +27,8 @@ export default function UrbanSneakersStore() {
       alert('El carrito está vacío');
       return;
     }
-
-    try {
-      // Preparar los datos del pedido
-      const orderData = {
-        productos: cartItems.map(item => ({
-          productoId: item.id.toString(),
-          nombre: item.name,
-          precio: item.price,
-          cantidad: 1, // Puedes modificar esto si tienes cantidades
-          imagen: item.image,
-          talla: item.size
-        })),
-        total: cartItems.reduce((sum, item) => sum + item.price, 0),
-        cliente: {
-          nombre: '', // Puedes añadir un formulario para recoger estos datos
-          email: '',
-          telefono: '',
-          direccion: ''
-        },
-        estado: 'pendiente'
-      };
-
-      // Enviar la petición al backend
-      const response = await fetch('http://localhost:4000/api/pedidos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert('¡Pedido realizado con éxito! ID: ' + data.pedido._id);
-        // Vaciar el carrito
-        setCartItems([]);
-        setShowCart(false);
-      } else {
-        alert('Error al procesar el pedido: ' + data.message);
-      }
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al conectar con el servidor');
-    }
+    navigate('/checkout', { state: { cartItems } });
   };
-
-  // IMPORTANTE: Modifica el botón "Proceder al pago" para usar esta función
-  // Busca esta línea en tu código:
-  // <button style={styles.checkoutButton} ...>
-  // Y añade: onClick={handleCheckout}
 
   const products = [
     {

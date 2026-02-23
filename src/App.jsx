@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProductDetails from "./pages/ProductDetails";
+import Checkout from "./pages/Checkout";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,6 +32,10 @@ function App() {
           path="/producto/:id"
           element={isAuthenticated ? <ProductDetails /> : <Navigate to="/login" />}
         />
+        <Route
+          path="/checkout"
+          element={isAuthenticated ? <Checkout /> : <Navigate to="/login" />}
+        />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
@@ -38,4 +43,3 @@ function App() {
 }
 
 export default App;
-
