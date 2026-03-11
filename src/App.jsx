@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -10,8 +10,22 @@ import Checkout from "./pages/Checkout";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleLogin = () => setIsAuthenticated(true);
-  const handleLogout = () => setIsAuthenticated(false);
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    setIsAuthenticated(Boolean(token));
+  }, []);
+
+  const handleLogin = (accessToken, refreshToken) => {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    setIsAuthenticated(false);
+  };
 
   return (
     <Router>
@@ -22,7 +36,7 @@ function App() {
         />
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register onRegister={handleLogin} />}
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
         />
         <Route
           path="/dashboard"

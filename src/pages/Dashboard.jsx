@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import heroSneaker from './img/zapatilla.png';
 
-export default function UrbanSneakersStore() {
+export default function UrbanSneakersStore({ onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('todos');
   const [cartItems, setCartItems] = useState([]);
@@ -209,6 +209,15 @@ export default function UrbanSneakersStore() {
       display: 'flex',
       gap: '32px',
       alignItems: 'center'
+    },
+    logoutButton: {
+      backgroundColor: '#ff0000',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      padding: '8px 14px',
+      cursor: 'pointer',
+      fontWeight: '600'
     },
     navLink: {
       color: '#4B5563',
@@ -898,6 +907,14 @@ export default function UrbanSneakersStore() {
               onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             >
               <HeartIcon />
+            </button>
+            <button
+              style={styles.logoutButton}
+              onClick={onLogout}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#bc0b0b'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#ff0000'}
+            >
+              Cerrar sesión
             </button>
           </div>
         </div>
