@@ -82,7 +82,35 @@ export default function Checkout() {
 
     setLoading(true);
     try {
+      const token = localStorage.getItem("accessToken");
+      let userId = "";
+      if (token) {
+        try {
+          const payloadEnc = token.split(".")[1];
+          const decoded = JSON.parse(atob(payloadEnc));
+          userId = decoded.id || "";
+        } catch (e) {
+          console.error("Error decoding token");
+        }
+      }
+
+      if (!userId) {
+        alert("Debe iniciar sesión para crear un pedido");
+        setLoading(false);
+        return;
+      }
+
       const orderData = {
+        usuario: userId,
+        adrecaEnviament: `${form.address}, ${form.city} ${form.zip}`,
+        metodePagament: "targeta",
+        total: total,
+        estado: "pendiente",
+        productes: cartItems.map((item) => ({
+          producte: item.id.toString(),
+          quantitat: item.qty,
+          preuUnitari: item.price
+        })),
         productos: cartItems.map((item) => ({
           productoId: item.id.toString(),
           nombre: item.name,
@@ -91,19 +119,20 @@ export default function Checkout() {
           imagen: item.image,
           talla: item.size,
         })),
-        total: total,
         cliente: {
           nombre: form.name,
           email: form.email,
           telefono: "",
           direccion: `${form.address}, ${form.city} ${form.zip}`,
         },
-        estado: "pendiente",
       };
+
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const response = await fetch("http://localhost:4000/api/pedidos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(orderData),
       });
 
