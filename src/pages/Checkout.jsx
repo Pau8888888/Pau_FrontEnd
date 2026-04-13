@@ -127,18 +127,44 @@ export default function Checkout() {
         },
       };
 
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const createOrder = async (accessToken) => {
+        const headers = { "Content-Type": "application/json" };
+        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
-      const response = await fetch("http://localhost:4000/api/pedidos", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(orderData),
-      });
+        const response = await fetch("http://localhost:4000/api/pedidos", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(orderData),
+        });
 
-      const data = await response.json();
-      if (data.success) {
-        setOrderId(data.pedido?._id || "");
+        const data = await response.json().catch(() => ({}));
+        return { response, data };
+      };
+
+      let { response, data } = await createOrder(token);
+
+      if (response.status === 401) {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (refreshToken) {
+          const refreshResponse = await fetch("http://localhost:4000/api/auth/refresh", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken }),
+          });
+          const refreshData = await refreshResponse.json().catch(() => ({}));
+
+          if (refreshResponse.ok && refreshData?.data?.accessToken) {
+            localStorage.setItem("accessToken", refreshData.data.accessToken);
+            if (refreshData.data.refreshToken) {
+              localStorage.setItem("refreshToken", refreshData.data.refreshToken);
+            }
+            ({ response, data } = await createOrder(refreshData.data.accessToken));
+          }
+        }
+      }
+
+      if (response.ok && data.status === "success") {
+        setOrderId(data.data?._id || "");
         setDone(true);
       } else {
         alert(`Error al procesar el pedido: ${data.message || "desconocido"}`);
