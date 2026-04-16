@@ -3,11 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const steps = ["Envío", "Pago", "Resumen"];
 
-const formatCard = (v) =>
-  v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-const formatExpiry = (v) =>
-  v.replace(/\D/g, "").slice(0, 4).replace(/^(\d{2})(\d)/, "$1/$2");
-
 const initialForm = {
   name: "",
   email: "",
@@ -15,10 +10,7 @@ const initialForm = {
   city: "",
   zip: "",
   country: "ES",
-  cardName: "",
-  cardNumber: "",
-  expiry: "",
-  cvv: "",
+  cardName: "", // Lo mantenemos para facturación, pero no lo usamos para pagar
 };
 
 export default function Checkout() {
@@ -41,10 +33,7 @@ export default function Checkout() {
   const [orderId, setOrderId] = useState("");
 
   const set = (field) => (e) => {
-    let val = e.target.value;
-    if (field === "cardNumber") val = formatCard(val);
-    if (field === "expiry") val = formatExpiry(val);
-    if (field === "cvv") val = val.replace(/\D/g, "").slice(0, 3);
+    const val = e.target.value;
     setForm((f) => ({ ...f, [field]: val }));
     setErrors((er) => ({ ...er, [field]: "" }));
   };
@@ -59,10 +48,7 @@ export default function Checkout() {
       if (!form.zip) errs.zip = "Código postal obligatorio";
     }
     if (step === 1) {
-      if (!form.cardName) errs.cardName = "Nombre obligatorio";
-      if (form.cardNumber.replace(/\s/g, "").length !== 16) errs.cardNumber = "Número inválido";
-      if (!form.expiry || form.expiry.length < 5) errs.expiry = "Fecha inválida";
-      if (form.cvv.length !== 3) errs.cvv = "CVV inválido";
+      if (!form.cardName) errs.cardName = "Nombre obligatorio para la tarjeta";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -73,6 +59,7 @@ export default function Checkout() {
   };
   const prev = () => setStep((s) => s - 1);
 
+  // ✅ FUNCIÓN ACTUALIZADA: Llama a Stripe Checkout
   const submit = async () => {
     if (!validateStep()) return;
     if (cartItems.length === 0) {
@@ -83,95 +70,44 @@ export default function Checkout() {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      let userId = "";
-      if (token) {
-        try {
-          const payloadEnc = token.split(".")[1];
-          const decoded = JSON.parse(atob(payloadEnc));
-          userId = decoded.id || "";
-        } catch (e) {
-          console.error("Error decoding token");
-        }
-      }
 
-      if (!userId) {
-        alert("Debe iniciar sesión para crear un pedido");
-        setLoading(false);
-        return;
-      }
-
-      const orderData = {
-        usuario: userId,
-        adrecaEnviament: `${form.address}, ${form.city} ${form.zip}`,
-        metodePagament: "targeta",
-        total: total,
-        estado: "pendiente",
-        productes: cartItems.map((item) => ({
-          producte: item.id.toString(),
-          quantitat: item.qty,
-          preuUnitari: item.price
-        })),
-        productos: cartItems.map((item) => ({
-          productoId: item.id.toString(),
-          nombre: item.name,
-          precio: item.price,
-          cantidad: item.qty,
-          imagen: item.image,
-          talla: item.size,
-        })),
-        cliente: {
-          nombre: form.name,
-          email: form.email,
-          telefono: "",
-          direccion: `${form.address}, ${form.city} ${form.zip}`,
+      // 👇 LLAMADA A STRIPE (no a /pedidos)
+      const response = await fetch("http://localhost:4000/api/checkout/create-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-      };
-
-      const createOrder = async (accessToken) => {
-        const headers = { "Content-Type": "application/json" };
-        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
-
-        const response = await fetch("http://localhost:4000/api/pedidos", {
-          method: "POST",
-          headers,
-          body: JSON.stringify(orderData),
-        });
-
-        const data = await response.json().catch(() => ({}));
-        return { response, data };
-      };
-
-      let { response, data } = await createOrder(token);
-
-      if (response.status === 401) {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          const refreshResponse = await fetch("http://localhost:4000/api/auth/refresh", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken }),
-          });
-          const refreshData = await refreshResponse.json().catch(() => ({}));
-
-          if (refreshResponse.ok && refreshData?.data?.accessToken) {
-            localStorage.setItem("accessToken", refreshData.data.accessToken);
-            if (refreshData.data.refreshToken) {
-              localStorage.setItem("refreshToken", refreshData.data.refreshToken);
-            }
-            ({ response, data } = await createOrder(refreshData.data.accessToken));
+        body: JSON.stringify({
+          products: cartItems.map(item => ({
+            productId: item._id || (typeof item.id === 'string' ? item.id : String(item.id)),
+            quantity: item.qty,
+            name: item.name,
+            price: item.price,
+            imagen: item.image
+          })),
+          shippingAddress: {
+            name: form.name,
+            email: form.email,
+            street: form.address,
+            city: form.city,
+            postalCode: form.zip,
+            country: form.country
           }
-        }
-      }
+        })
+      });
 
-      if (response.ok && data.status === "success") {
-        setOrderId(data.data?._id || "");
-        setDone(true);
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // 🚀 REDIRECCIÓN A STRIPE CHECKOUT
+        window.location.href = data.url;
       } else {
-        alert(`Error al procesar el pedido: ${data.message || "desconocido"}`);
+        alert(`Error: ${data.message || "No se pudo crear la sesión de pago"}`);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Error al conectar con el servidor");
+      alert("Error de conexión con el servidor");
     } finally {
       setLoading(false);
     }
@@ -237,7 +173,7 @@ export default function Checkout() {
                   onClick={submit}
                   disabled={loading}
                 >
-                  {loading ? "Procesando…" : "Confirmar pedido"}
+                  {loading ? "Procesando…" : "Pagar con Stripe"}
                 </button>
               )}
             </div>
@@ -252,6 +188,7 @@ export default function Checkout() {
   );
 }
 
+// ... [Stepper, Field, Input, ShippingStep se mantienen igual] ...
 function Stepper({ step }) {
   return (
     <div style={styles.stepper}>
@@ -334,35 +271,32 @@ function ShippingStep({ form, set, errors }) {
   );
 }
 
+// ✅ PaymentStep SIMPLIFICADO: Ya no pide datos de tarjeta
 function PaymentStep({ form, set, errors }) {
   return (
     <div>
-      <h2 style={styles.stepTitle}>Datos de pago</h2>
-      <div style={styles.cardPreview}>
-        <div style={styles.cardChip}>▪▪▪▪</div>
-        <div style={styles.cardNum}>{form.cardNumber || "•••• •••• •••• ••••"}</div>
-        <div style={styles.cardMeta}>
-          <span>{form.cardName || "NOMBRE TITULAR"}</span>
-          <span>{form.expiry || "MM/AA"}</span>
-        </div>
-      </div>
-      <Field label="Nombre del titular" error={errors.cardName}>
+      <h2 style={styles.stepTitle}>Datos de facturación</h2>
+
+      <Field label="Nombre en la tarjeta" error={errors.cardName}>
         <Input value={form.cardName} onChange={set("cardName")} placeholder="Juan García" error={errors.cardName} />
       </Field>
-      <Field label="Número de tarjeta" error={errors.cardNumber}>
-        <Input value={form.cardNumber} onChange={set("cardNumber")} placeholder="1234 5678 9012 3456" error={errors.cardNumber} />
-      </Field>
-      <div style={styles.row}>
-        <Field label="Caducidad" error={errors.expiry}>
-          <Input value={form.expiry} onChange={set("expiry")} placeholder="MM/AA" error={errors.expiry} />
-        </Field>
-        <Field label="CVV" error={errors.cvv}>
-          <Input value={form.cvv} onChange={set("cvv")} placeholder="123" error={errors.cvv} />
-        </Field>
+
+      <div style={styles.stripeNotice}>
+        <div>
+          <strong>Pago seguro con Stripe</strong>
+          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#666" }}>
+            Serás redirigido a la página segura de Stripe para completar el pago.
+            No guardamos tus datos de tarjeta.
+          </p>
+        </div>
       </div>
-      <p style={{ fontSize: 12, color: "#888", marginTop: 12 }}>
-        Pago simulado. No se procesan datos reales.
-      </p>
+
+      <div style={styles.paymentMethods}>
+        <span style={styles.badge}>Visa</span>
+        <span style={styles.badge}>Mastercard</span>
+        <span style={styles.badge}>Amex</span>
+        <span style={styles.badge}>Apple Pay</span>
+      </div>
     </div>
   );
 }
@@ -382,7 +316,7 @@ function SummaryStep({ form }) {
       </div>
       <div style={styles.summarySection}>
         <h3 style={styles.summarySubtitle}>Pago</h3>
-        <p style={styles.summaryText}>Tarjeta terminada en ···· {form.cardNumber.slice(-4) || "????"}</p>
+        <p style={styles.summaryText}>Procesado de forma segura por Stripe</p>
       </div>
     </div>
   );
@@ -427,7 +361,7 @@ function Success({ name, orderId, onBack }) {
         <div style={styles.successIcon}>✓</div>
         <h2 style={{ margin: "16px 0 8px", color: "#111827" }}>¡Gracias, {firstName}!</h2>
         <p style={{ color: "#666", textAlign: "center" }}>
-          Tu pedido se ha hecho con éxito.
+          Tu pedido se ha procesado con éxito.
           <br />
           {orderId ? `ID del pedido: ${orderId}` : "Recibirás un correo de confirmación pronto."}
         </p>
@@ -468,10 +402,36 @@ const styles = {
   btnRow: { display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24, paddingTop: 16, borderTop: "1px solid #f0f0f0" },
   btnPrimary: { background: "#ff0000", color: "#fff", border: "none", padding: "12px 28px", borderRadius: 8, fontFamily: "inherit", fontWeight: 700, fontSize: 15, cursor: "pointer" },
   btnSecondary: { background: "transparent", color: "#555", border: "1.5px solid #ddd", padding: "12px 20px", borderRadius: 8, fontFamily: "inherit", fontWeight: 600, fontSize: 15, cursor: "pointer" },
-  cardPreview: { background: "linear-gradient(135deg, #111827 0%, #1f2937 60%, #ef4444 100%)", borderRadius: 14, padding: "24px 28px", color: "#fff", marginBottom: 24, boxShadow: "0 8px 24px rgba(0,0,0,.2)" },
-  cardChip: { fontSize: 18, letterSpacing: 2, marginBottom: 20, opacity: 0.6 },
-  cardNum: { fontSize: 18, letterSpacing: 4, fontFamily: "monospace", marginBottom: 20 },
-  cardMeta: { display: "flex", justifyContent: "space-between", fontSize: 13, opacity: 0.8, textTransform: "uppercase", letterSpacing: 1 },
+
+  // ✅ Nuevos estilos para PaymentStep
+  stripeNotice: {
+    display: "flex",
+    gap: 12,
+    alignItems: "flex-start",
+    background: "#f0f9ff",
+    border: "1px solid #bae6fd",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  lockIcon: {
+    fontSize: 20,
+  },
+  paymentMethods: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+    marginTop: 8,
+  },
+  badge: {
+    background: "#f3f4f6",
+    padding: "4px 12px",
+    borderRadius: 20,
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#374151",
+  },
+
   summaryBox: { background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 4px 24px rgba(0,0,0,.07)" },
   summaryTitle: { fontSize: 17, fontWeight: 700, color: "#111827", marginBottom: 20, marginTop: 0 },
   cartItem: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },

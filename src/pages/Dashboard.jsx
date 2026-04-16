@@ -32,7 +32,7 @@ export default function UrbanSneakersStore({ onLogout }) {
 
   const products = [
     {
-      id: 1,
+      id: "69df5114795c789453b6f853",
       name: "Air Urban Classic",
       price: 129.99,
       category: "classics",
@@ -42,7 +42,7 @@ export default function UrbanSneakersStore({ onLogout }) {
       image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop"
     },
     {
-      id: 2,
+      id: "69df5114795c789453b6f854",
       name: "Street Runner Pro",
       price: 159.99,
       category: "running",
@@ -52,7 +52,7 @@ export default function UrbanSneakersStore({ onLogout }) {
       image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=500&h=500&fit=crop"
     },
     {
-      id: 3,
+      id: "69df5114795c789453b6f855",
       name: "Metro Comfort Boost",
       price: 139.99,
       category: "comfort",
@@ -62,7 +62,7 @@ export default function UrbanSneakersStore({ onLogout }) {
       image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&h=500&fit=crop"
     },
     {
-      id: 4,
+      id: "69df5114795c789453b6f856",
       name: "Retro Wave 2024",
       price: 149.99,
       category: "retro",
@@ -72,7 +72,7 @@ export default function UrbanSneakersStore({ onLogout }) {
       image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&h=500&fit=crop"
     },
     {
-      id: 5,
+      id: "69df5114795c789453b6f857",
       name: "Urban Elite X",
       price: 179.99,
       category: "premium",
@@ -82,7 +82,7 @@ export default function UrbanSneakersStore({ onLogout }) {
       image: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&h=500&fit=crop"
     },
     {
-      id: 6,
+      id: "69df5114795c789453b6f858",
       name: "City Walker Flex",
       price: 119.99,
       category: "casual",
