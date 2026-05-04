@@ -1,0 +1,18 @@
+# ============================================
+# Dockerfile - Frontend DESENVOLUPAMENT
+# ============================================
+FROM node:20-alpine
+WORKDIR /app
+
+# Instal·lar dependències
+COPY package*.json ./
+RUN npm install
+
+# Copiar codi font
+COPY . .
+
+# Port del servidor Vite
+EXPOSE 5173
+
+# Arrancar Vite dev server amb --host per accés extern
+CMD ["npm", "run", "dev", "--", "--host"]

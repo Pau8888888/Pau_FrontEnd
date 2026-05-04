@@ -72,7 +72,7 @@ export default function Checkout() {
       const token = localStorage.getItem("accessToken");
 
       // 👇 LLAMADA A STRIPE (no a /pedidos)
-      const response = await fetch("http://localhost:4000/api/checkout/create-session", {
+      const response = await fetch("/api/checkout/create-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
