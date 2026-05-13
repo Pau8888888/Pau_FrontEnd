@@ -81,7 +81,7 @@ export default function Checkout() {
         body: JSON.stringify({
           products: cartItems.map(item => ({
             productId: item._id || (typeof item.id === 'string' ? item.id : String(item.id)),
-            quantity: item.qty,
+            quantity: Math.max(1, Number(item.qty) || 1),
             name: item.name,
             price: item.price,
             imagen: item.image
@@ -97,13 +97,20 @@ export default function Checkout() {
         })
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      let data = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = {};
+      }
 
       if (response.ok && data.url) {
         // 🚀 REDIRECCIÓN A STRIPE CHECKOUT
         window.location.href = data.url;
       } else {
-        alert(`Error: ${data.message || "No se pudo crear la sesión de pago"}`);
+        const fallbackText = raw && !data.message ? raw.slice(0, 180) : "";
+        alert(`Error: ${data.message || fallbackText || `No se pudo crear la sesion de pago (HTTP ${response.status})`}`);
       }
     } catch (error) {
       console.error("Error:", error);

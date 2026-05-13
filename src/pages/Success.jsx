@@ -7,9 +7,30 @@ export default function Success() {
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Netejar el carret en cas d'èxit
     localStorage.removeItem('cart');
-  }, []);
+
+    const confirmOrder = async () => {
+      if (!sessionId) return;
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      try {
+        await fetch('/api/checkout/confirm-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ sessionId })
+        });
+      } catch (error) {
+        console.error('Error confirming Stripe session:', error);
+      }
+    };
+
+    confirmOrder();
+  }, [sessionId]);
 
   const styles = {
     container: {
@@ -53,11 +74,11 @@ export default function Success() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.icon}>✓</div>
+      <div style={styles.icon}>&#10003;</div>
       <h1 style={styles.title}>Pagament Completat!</h1>
       <p style={styles.text}>
-        Gràcies per la teva compra. Hem rebut correctament el teu pagament.
-        {sessionId && <><br /><small style={{color: '#999'}}>ID de sessió: {sessionId}</small></>}
+        Gracies per la teva compra. Hem rebut correctament el teu pagament.
+        {sessionId && <><br /><small style={{ color: '#999' }}>ID de sessio: {sessionId}</small></>}
       </p>
       <button style={styles.button} onClick={() => navigate('/dashboard')}>
         Tornar a la Botiga

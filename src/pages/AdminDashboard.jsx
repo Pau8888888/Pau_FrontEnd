@@ -15,16 +15,42 @@ export default function AdminDashboard({ auth, onLogout }) {
   const [form, setForm] = useState({ name: '', price: '', description: '', category: '', stock: '' });
   const [formMsg, setFormMsg] = useState('');
 
-  useEffect(() => {
-    if (!auth?.accessToken) { setLoading(false); return; }
+  const fetchDashboardData = async (showLoading = false) => {
+    if (!auth?.accessToken) {
+      setLoading(false);
+      return;
+    }
+
+    if (showLoading) setLoading(true);
     const h = { Authorization: `Bearer ${auth.accessToken}` };
-    Promise.all([
-      fetch('/api/orders', { headers: h }).then(r => r.json().catch(() => ({}))),
-      fetch('/api/products').then(r => r.json().catch(() => ({}))),
-    ]).then(([oData, pData]) => {
+
+    try {
+      const [oData, pData] = await Promise.all([
+        fetch('/api/orders', { headers: h }).then(r => r.json().catch(() => ({}))),
+        fetch('/api/products').then(r => r.json().catch(() => ({}))),
+      ]);
+
       setOrders(Array.isArray(oData.orders) ? oData.orders : []);
       setProducts(Array.isArray(pData.data) ? pData.data : Array.isArray(pData.products) ? pData.products : []);
-    }).catch(e => setError(e.message)).finally(() => setLoading(false));
+      setError('');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData(true);
+  }, [auth?.accessToken]);
+
+  useEffect(() => {
+    if (!auth?.accessToken) return;
+    const intervalId = setInterval(() => {
+      fetchDashboardData(false);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [auth?.accessToken]);
 
   const stats = useMemo(() => {
