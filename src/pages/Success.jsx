@@ -12,18 +12,25 @@ export default function Success() {
     const confirmOrder = async () => {
       if (!sessionId) return;
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
       try {
-        await fetch('/api/checkout/confirm-session', {
+        const token = localStorage.getItem('accessToken');
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const res = await fetch('/api/checkout/confirm-session', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
+          headers,
           body: JSON.stringify({ sessionId })
         });
+
+        if (!res.ok) {
+          const body = await res.text();
+          console.error('Confirm session failed:', res.status, body);
+        }
       } catch (error) {
         console.error('Error confirming Stripe session:', error);
       }
